@@ -299,8 +299,6 @@ github.com/opensourceways/go-gitee v0.0.0-20231017075452-8c3dcc460ed2/go.mod h1:
 github.com/opensourceways/xihe-grpc-protocol v0.0.0-20231018090501-e7ea782f5815 h1:iC6Wb82l9c/tZFgH9ITDCrD7H/HMf+QIvmS0y70Ck5s=
 github.com/opensourceways/xihe-grpc-protocol v0.0.0-20231018090501-e7ea782f5815/go.mod h1:VGOxZagbC7dxDXuFKm3nK1iTJHYYIQ62Bth7H/8bmGU=
 github.com/opensourceways/xihe-grpc-protocol v0.0.0-20231024090229-ec75ab0beeb9 h1:JYK5LKvdexQWgyhef6GTIxZGP3t772+G2jB4567Ajpg=
-github.com/opensourceways/xihe-grpc-protocol v0.0.0-20231024090229-ec75ab0beeb9/go.mod h1:H3p8hwPJ0vUAES4mo05qzVOLORQac369cqZUKg+LuV8=
-github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
 github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNcZljzZR9VXg+4=
 github.com/pierrec/lz4/v4 v4.1.14/go.mod h1:gZWDp/Ze/IJXGXf23ltt2EXimqmTUXEy0GFuRQyBid4=
 github.com/pierrec/lz4/v4 v4.1.18/go.mod h1:gZWDp/Ze/IJXGXf23ltt2EXimqmTUXEy0GFuRQyBid4=
