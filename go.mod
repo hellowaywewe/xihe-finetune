@@ -4,8 +4,8 @@ go 1.18
 
 require (
 	github.com/gin-gonic/gin v1.9.1
-	github.com/opensourceways/community-robot-lib v0.0.0-20221212062947-85a66b110688
-	github.com/opensourceways/xihe-grpc-protocol v0.0.0-20231016132418-95a47394b355
+	github.com/opensourceways/community-robot-lib v0.0.0-20231018034126-a664e14dbb9d
+	github.com/opensourceways/xihe-grpc-protocol v0.0.0-20231018090501-e7ea782f5815
 	github.com/sirupsen/logrus v1.9.3
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
@@ -52,5 +52,5 @@ require (
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apimachinery v0.24.0 // indirect
+	k8s.io/apimachinery v0.25.3 // indirect
 )
