@@ -5,7 +5,9 @@ import logging
 
 from flask import Flask, abort, request, jsonify, g, url_for, make_response
 from flask_httpauth import HTTPTokenAuth
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine, Column, Integer, String
 from flask_cors import *
 from authlib.jose import jwt
 from authlib.jose.errors import ExpiredTokenError
@@ -33,15 +35,25 @@ app.logger.setLevel(gunicorn_logger.level)
 
 auth = HTTPTokenAuth(scheme="JWT")
 
-# extensions
-db = SQLAlchemy(app)
+if not os.path.exists(basic_config['CA_CERT_PATH']):
+    raise FileExistsError("Cert file does not exist.")
 
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
+                       max_overflow=0,
+                       pool_size=5)
+conn = engine.connect()
+Session = sessionmaker(bind=conn)
+session = scoped_session(Session)
+os.remove(basic_config['CA_CERT_PATH'])
 
-class User(db.Model):
+# 执行declarative_base获得一个类
+Base = declarative_base()
+
+class User(Base):
     __tablename__ = basic_config['FINETUNE_TABLE']
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(32), index=True)
-    password_hash = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    username = Column(String(32), index=True)
+    password_hash = Column(String(128))
 
     def hash_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -69,7 +81,7 @@ class User(db.Model):
             # 验证并解码 JWT
             claims = jwt.decode(token, app.config["SECRET_KEY"])
             # 获取当前用户信息
-            user = User.query.get(claims["sub"])
+            user = session.query(User).get(claims["sub"])
         except ExpiredTokenError:
             app.logger.info("token invalid")
             return None
@@ -112,12 +124,12 @@ def new_user():
     password = request.json.get("password")
     if username is None or password is None:
         abort(400)  # missing arguments
-    if User.query.filter_by(username=username).first() is not None:
+    if session.query(User).filter(User.username==username).first() is not None:
         return jsonify({"status": "-1", "msg": "用户名已存在"})  # existing user
     user = User(username=username)
     user.hash_password(password)
-    db.session.add(user)
-    db.session.commit()
+    session.add(user)
+    session.commit()
     return (jsonify({"username": user.username}), 201, {
         "Location": url_for("get_user", id=user.id, _external=True)
     })
@@ -125,7 +137,7 @@ def new_user():
 
 @app.route("/foundation-model/users/<int:id>")
 def get_user(id):
-    user = User.query.get(id)
+    user = session.query(User).get(id)
     if not user:
         abort(400)
     return jsonify({"username": user.username})
@@ -139,11 +151,9 @@ def get_auth_token():
     password = request.json.get("password")
     if username is None or password is None:
         abort(400)  # missing arguments
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return jsonify({"status": "-1", "msg": "用户名不存在"})
-    if not user.verify_password(password):
-        return jsonify({"status": "-1", "msg": "用户名或者密码错误"})
+    user = session.query(User).filter_by(User.username==username).first()
+    if not user or not user.verify_password(password):
+        return jsonify({"status": "-1", "msg": "用户名不存在或者用户名错误或者密码错误"})
     g.user = user
     duration = 600
     token = g.user.generate_auth_token(duration)
@@ -237,3 +247,5 @@ def get_log(job_id):
         "msg": "查询微调日志成功",
         "obs_url": res["obs_url"]
     })
+
+
