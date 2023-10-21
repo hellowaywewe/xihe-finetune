@@ -20,6 +20,7 @@ USER mindspore
 WORKDIR /opt/app
 
 COPY --chown=mindspore --from=BUILDER /go/src/github.com/opensourceways/xihe-finetune/xihe-finetune /opt/app
+RUN chmod 550 /opt/app/xihe-finetune
 
 ENTRYPOINT ["/opt/app/xihe-finetune"]
 
