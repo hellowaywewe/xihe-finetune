@@ -37,4 +37,4 @@ RUN dnf remove -y gcc && dnf autoremove -y && dnf clean all
 
 USER mindspore
 
-CMD ["gunicorn", "--preload", "-c", "gunicorn.config.py", "app.run:app"]
+CMD ["gunicorn", "-c", "gunicorn.config.py", "app.run:app"]

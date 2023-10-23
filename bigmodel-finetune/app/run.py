@@ -35,16 +35,18 @@ app.logger.setLevel(gunicorn_logger.level)
 
 auth = HTTPTokenAuth(scheme="JWT")
 
-if not os.path.exists(basic_config['CA_CERT_PATH']):
-    raise FileExistsError("Cert file does not exist.")
+try :
+    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
+                           max_overflow=0,
+                           pool_size=5)
+    conn = engine.connect()
+    Session = sessionmaker(bind=conn)
+    session = scoped_session(Session)
+except:
+   app.logger.error("Database connection failed.")
 
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
-                       max_overflow=0,
-                       pool_size=5)
-conn = engine.connect()
-Session = sessionmaker(bind=conn)
-session = scoped_session(Session)
-os.remove(basic_config['CA_CERT_PATH'])
+if os.path.exists(basic_config['CA_CERT_PATH']):
+   os.remove(basic_config['CA_CERT_PATH'])
 
 # 执行declarative_base获得一个类
 Base = declarative_base()
@@ -116,33 +118,6 @@ def health_func():
     return jsonify({"health": "true"})
 
 
-@app.route("/foundation-model/users", methods=["POST"])
-def new_user():
-    if request.json is None:
-        abort(400)
-    username = request.json.get("username")
-    password = request.json.get("password")
-    if username is None or password is None:
-        abort(400)  # missing arguments
-    if session.query(User).filter(User.username==username).first() is not None:
-        return jsonify({"status": "-1", "msg": "用户名已存在"})  # existing user
-    user = User(username=username)
-    user.hash_password(password)
-    session.add(user)
-    session.commit()
-    return (jsonify({"username": user.username}), 201, {
-        "Location": url_for("get_user", id=user.id, _external=True)
-    })
-
-
-@app.route("/foundation-model/users/<int:id>")
-def get_user(id):
-    user = session.query(User).get(id)
-    if not user:
-        abort(400)
-    return jsonify({"username": user.username})
-
-
 @app.route("/foundation-model/token", methods=["POST"])
 def get_auth_token():
     if request.json is None:
@@ -150,8 +125,11 @@ def get_auth_token():
     username = request.json.get("username")
     password = request.json.get("password")
     if username is None or password is None:
-        abort(400)  # missing arguments
-    user = session.query(User).filter_by(User.username==username).first()
+        return jsonify({"status": "-1", "msg": "输入用户名或者密码为空"})
+    try:
+        user = session.query(User).filter(User.username==username).first()
+    except:
+        app.logger.error("Database search failed.")
     if not user or not user.verify_password(password):
         return jsonify({"status": "-1", "msg": "用户名不存在或者用户名错误或者密码错误"})
     g.user = user
@@ -168,12 +146,12 @@ def get_auth_token():
 @app.route("/v1/foundation-model/finetune", methods=["POST"])
 @auth.login_required
 def create_finetune():
-    app.logger.info(f"create: {request.json}")
     if not request.json:
         abort(400)
     for key in ["user", "task_name", "foundation_model", "task_type"]:
         if key not in request.json and not isinstance(request.json[key], str):
             abort(400)
+    app.logger.info(f"create: {request.json}")
     data = request.json
     user = data.get("user")
     task_name = data.get("task_name")
@@ -247,5 +225,4 @@ def get_log(job_id):
         "msg": "查询微调日志成功",
         "obs_url": res["obs_url"]
     })
-
 
