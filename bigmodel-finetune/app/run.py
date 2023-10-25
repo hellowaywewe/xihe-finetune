@@ -22,7 +22,6 @@ fmh = FoundationModelHandler()
 CORS(app, supports_credentials=True)
 
 # initialization
-# todo: put the secret key to KMC & use a HASH KEY
 basic_config = BASIC_CONFIG
 app.config["SECRET_KEY"] = basic_config['SECRET_KEY']
 app.config["SQLALCHEMY_DATABASE_URI"] = basic_config['FINETUNE_MYSQL_URI']
