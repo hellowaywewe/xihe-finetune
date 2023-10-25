@@ -7,7 +7,7 @@ MAINTAINER zengchen1024<chenzeng765@gmail.com>
 
 # build binary
 COPY . /go/src/github.com/opensourceways/xihe-finetune
-RUN cd /go/src/github.com/opensourceways/xihe-finetune && GO111MODULE=on CGO_ENABLED=0 go build -o xihe-finetune
+RUN cd /go/src/github.com/opensourceways/xihe-finetune && GO111MODULE=on CGO_ENABLED=0 go build -o xihe-finetune -buildmode=pie --ldflags "-s -linkmode 'external' -extldflags '-Wl,-z,now'"
 
 # copy binary config and utils
 FROM openeuler/openeuler:22.03
@@ -20,6 +20,7 @@ USER mindspore
 WORKDIR /opt/app
 
 COPY --chown=mindspore --from=BUILDER /go/src/github.com/opensourceways/xihe-finetune/xihe-finetune /opt/app
+RUN chmod 550 /opt/app/xihe-finetune
 
 ENTRYPOINT ["/opt/app/xihe-finetune"]
 
