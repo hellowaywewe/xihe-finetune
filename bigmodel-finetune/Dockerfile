@@ -36,10 +36,11 @@ RUN adduser -u 5000 mindspore && chown -R mindspore /bigmodel-finetune && chmod 
 RUN dnf remove -y gcc && dnf autoremove -y && dnf clean all
 
 RUN chmod 550 /script
-RUN chmod 550 /bigmodel-finetune
-RUN chmod 550 /bigmodel-finetune/test
+RUN chmod 700 /bigmodel-finetune && chown mindspore:mindspore /bigmodel-finetune
+RUN chmod 550 /bigmodel-finetune/test && chown mindspore:mindspore /bigmodel-finetune/test
 RUN chmod 640 /bigmodel-finetune/gunicorn.config.py
 
 USER mindspore
+
 
 CMD ["gunicorn", "-c", "gunicorn.config.py", "app.run:app"]
