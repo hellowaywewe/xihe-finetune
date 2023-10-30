@@ -93,7 +93,6 @@ class User(Base):
 
 @auth.verify_token
 def verify_token(token):
-    # Config.SECRET_KEY:内部的私钥，这里写在配置信息里
     user = User.verify_auth_token(token)
     if not user:
         return False
@@ -150,7 +149,7 @@ def create_finetune():
     for key in ["user", "task_name", "foundation_model", "task_type"]:
         if key not in request.json and not isinstance(request.json[key], str):
             abort(400)
-    app.logger.info(f"create: {request.json}")
+    app.logger.info("create: %s", request.json)
     data = request.json
     user = data.get("user")
     task_name = data.get("task_name")
@@ -163,13 +162,13 @@ def create_finetune():
     if parameters:
         for param in parameters:
             params[param["name"]] = param["value"]
-    app.logger.info(f"params: {params}")
+    app.logger.info("params: %s", params)
     res = fmh.create_finetune_by_user(user=user,
                                       task_name=task_name,
                                       foundation_model=foundation_model,
                                       task_type=task_type,
                                       **params)
-    app.logger.info(f"res: {res}")
+    app.logger.info("res: %s", res)
     if res == -1:
         return jsonify({"status": -1, "msg": "创建微调任务失败"}), 201
     return jsonify({"status": 201, "msg": "创建微调任务成功", "job_id": res}), 201
@@ -178,9 +177,9 @@ def create_finetune():
 @app.route("/v1/foundation-model/finetune/<string:job_id>", methods=["GET"])
 @auth.login_required
 def get_finetune(job_id):
-    app.logger.info(f"get: {job_id}")
+    app.logger.info("get: %s", job_id)
     res = fmh.get_finetune_info(job_id)
-    app.logger.info(f"res: {res}")
+    app.logger.info("res: %s", res)
     if not res:
         return jsonify({"status": -1, "msg": "查询微调详情失败"}), 200
     return jsonify({"status": 200, "msg": "查询微调详情成功", "data": res})
@@ -189,9 +188,9 @@ def get_finetune(job_id):
 @app.route("/v1/foundation-model/finetune/<string:job_id>", methods=["PUT"])
 @auth.login_required
 def terminal_finetune(job_id):
-    app.logger.info(f"terminal: {job_id}", job_id)
+    app.logger.info("terminal: %s", job_id)
     res = fmh.terminal_finetune(job_id)
-    app.logger.info(f"res: {res}")
+    app.logger.info("res: %s", res)
     if res is False:
         return jsonify({"status": -1, "msg": "终止微调任务失败"}), 200
     return jsonify({"status": 202, "msg": "终止微调任务成功"}), 200
@@ -200,9 +199,9 @@ def terminal_finetune(job_id):
 @app.route("/v1/foundation-model/finetune/<string:job_id>", methods=["DELETE"])
 @auth.login_required
 def delete_finetune(job_id):
-    app.logger.info(f"delete: {job_id}")
+    app.logger.info("delete: %s", job_id)
     res = fmh.delete_finetune(job_id)
-    app.logger.info(f"res: {res}")
+    app.logger.info("res: %s", res)
     if res is False:
         return jsonify({"status": -1, "msg": "删除微调任务失败"}), 200
     return jsonify({"status": 204, "msg": "删除微调任务成功"}), 200
@@ -211,9 +210,9 @@ def delete_finetune(job_id):
            methods=["GET"])
 @auth.login_required
 def get_log(job_id):
-    app.logger.info(f"get log: {job_id}")
+    app.logger.info("get log: ", job_id)
     res = fmh.get_finetune_log_url(job_id=job_id)
-    app.logger.info(f"res: {res}")
+    app.logger.info("res: %s", res)
     if not res:
         return jsonify({
             "status": -1,
